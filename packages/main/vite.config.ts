@@ -65,12 +65,12 @@ export default defineConfig({
     outDir: "dist",
     target: "node22",
     lib: {
-      entry: [
-        "src/index.ts",
-        "src/entry.ts",
-        "src/electron-builder.ts",
-        "src/build/notarize.ts",
-      ],
+      entry: {
+        index: "src/index.ts",
+        entry: "src/entry.ts",
+        "electron-builder": "src/electron-builder.ts",
+        "build/notarize": "src/build/notarize.ts",
+      },
     },
     rollupOptions: {
       output: [
