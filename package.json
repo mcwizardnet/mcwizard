@@ -35,7 +35,7 @@
     "dotenv": "^17.2.1"
   },
   "devDependencies": {
-    "@electron/notarize": "^3.3.1",
+    "@electron/notarize": "^3.0.2",
     "vite": "^7.1.2",
     "tsx": "^4.20.4",
     "prompts": "^2.4.2",

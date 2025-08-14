@@ -3,6 +3,8 @@ import path from "node:path";
 import dotenv from "dotenv";
 dotenv.config();
 
+const fs = await import("node:fs");
+
 // Decode and prepare Apple credentials if provided in base64 secrets
 function decodeToFileIfBase64(
   envVar: string,
@@ -11,7 +13,6 @@ function decodeToFileIfBase64(
   const val = process.env[envVar];
   if (!val) return undefined;
   try {
-    const fs = require("node:fs");
     const buf = Buffer.from(val, "base64");
     if (!buf || buf.length === 0) return undefined;
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
@@ -40,10 +41,41 @@ if (process.env.APPLE_CSC_KEY_PASSWORD) {
   process.env.CSC_KEY_PASSWORD = process.env.APPLE_CSC_KEY_PASSWORD;
 }
 
+let apiKeyPath: string | undefined;
 const p8Path = path.resolve(process.cwd(), "tmp", "AuthKey.p8");
-const wroteP8 = decodeToFileIfBase64("APPLE_API_KEY_BASE64", p8Path);
-if (wroteP8) {
-  process.env.APPLE_API_KEY = wroteP8;
+
+// 1) If APPLE_API_KEY is a path to a file, use it directly
+if (process.env.APPLE_API_KEY && fs.existsSync(process.env.APPLE_API_KEY)) {
+  apiKeyPath = process.env.APPLE_API_KEY;
+}
+
+// 2) If APPLE_API_KEY looks like raw key content or base64, persist it
+if (!apiKeyPath && process.env.APPLE_API_KEY) {
+  const keyVal = process.env.APPLE_API_KEY;
+  try {
+    const looksLikePem = /BEGIN [A-Z\s]*PRIVATE KEY/.test(keyVal);
+    const looksLikeB64 = /^[A-Za-z0-9+/=\r\n]+$/.test(keyVal) && keyVal.length > 200;
+    if (looksLikePem) {
+      fs.mkdirSync(path.dirname(p8Path), { recursive: true });
+      fs.writeFileSync(p8Path, keyVal);
+      apiKeyPath = p8Path;
+    } else if (looksLikeB64) {
+      const decoded = Buffer.from(keyVal, "base64");
+      fs.mkdirSync(path.dirname(p8Path), { recursive: true });
+      fs.writeFileSync(p8Path, decoded);
+      apiKeyPath = p8Path;
+    }
+  } catch {}
+}
+
+// 3) Else if APPLE_API_KEY_BASE64 is provided, decode it
+if (!apiKeyPath) {
+  const wroteP8 = decodeToFileIfBase64("APPLE_API_KEY_BASE64", p8Path);
+  if (wroteP8) apiKeyPath = wroteP8;
+}
+
+if (apiKeyPath) {
+  process.env.APPLE_API_KEY = apiKeyPath;
 }
 // If signing inputs are missing locally, allow unsigned builds
 if (!process.env.CSC_LINK && !process.env.CSC_IDENTITY_AUTO_DISCOVERY) {
