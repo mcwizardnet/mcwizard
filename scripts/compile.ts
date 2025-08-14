@@ -85,6 +85,16 @@ if (process.platform === "darwin") {
   }
 }
 
+// Guardrails: on CI macOS, require signing inputs to avoid silent skip
+if (process.env.CI === "true" && process.platform === "darwin") {
+  const hasSigning = Boolean(process.env.CSC_LINK) && Boolean(process.env.CSC_KEY_PASSWORD);
+  if (!hasSigning) {
+    throw new Error(
+      "CI mac build missing signing secrets: ensure APPLE_CSC_LINK_BASE64 and APPLE_CSC_KEY_PASSWORD are set",
+    );
+  }
+}
+
 // 1) Build all workspaces
 const buildResult = spawnSync("npm", ["run", "build"], {
   stdio: "inherit",
