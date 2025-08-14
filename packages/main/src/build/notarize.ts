@@ -6,6 +6,16 @@ import { spawnSync } from "node:child_process";
 export default async function notarizeHook(context: any) {
   if (process.platform !== "darwin") return;
 
+  // Only notarize on CI by default. Locally, require NOTARIZE=true to opt-in.
+  const shouldNotarize =
+    process.env.CI === "true" || process.env.NOTARIZE === "true";
+  if (!shouldNotarize) {
+    console.log(
+      "Skipping notarization: set NOTARIZE=true to enable locally (CI always on)",
+    );
+    return;
+  }
+
   const appleApiKey = process.env.APPLE_API_KEY;
   const appleApiIssuer = process.env.APPLE_API_ISSUER;
   const appleApiKeyId = process.env.APPLE_API_KEY_ID;
@@ -24,7 +34,9 @@ export default async function notarizeHook(context: any) {
   console.log("Notarizing mac app with Apple API key...", appPath);
 
   // Prefer calling xcrun notarytool directly so we can control timeout and logs
-  const minutes = Number(process.env.NOTARIZE_WAIT_MINUTES || (process.env.CI ? 20 : 8));
+  const minutes = Number(
+    process.env.NOTARIZE_WAIT_MINUTES || (process.env.CI ? 20 : 8),
+  );
   const args = [
     "notarytool",
     "submit",
@@ -57,5 +69,3 @@ export default async function notarizeHook(context: any) {
   }
   console.log("Notarization complete.");
 }
-
-
