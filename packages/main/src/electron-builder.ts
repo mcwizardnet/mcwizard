@@ -27,6 +27,7 @@ export const config: Configuration = {
     output: "dist",
     buildResources: "resources",
   },
+  afterSign: process.platform === "darwin" ? "scripts/notarize.cjs" : undefined,
   publish: [
     {
       provider: "github",
@@ -43,6 +44,22 @@ export const config: Configuration = {
   },
   nsis: {
     oneClick: false,
+  },
+  mac: {
+    category: "public.app-category.utilities",
+    hardenedRuntime: true,
+    gatekeeperAssess: false,
+    entitlements: "resources/entitlements.mac.plist",
+    entitlementsInherit: "resources/entitlements.mac.plist",
+    target: [
+      {
+        target: "default",
+        arch: ["arm64", "x64"],
+      },
+    ],
+    notarize: {
+      teamId: process.env.APPLE_TEAM_ID,
+    } as any,
   },
 };
 

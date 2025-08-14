@@ -5,6 +5,7 @@ import registerAppProtocol from "./utils/registerAppProtocol";
 import createMainWindow from "./utils/createMainWindow";
 import guardSingleInstance from "./utils/guardSingleInstance";
 import registerIPCHandlers from "./utils/registerIPCHandlers";
+import { initAutoUpdater } from "./utils/autoUpdate";
 
 export async function initApp() {
   // Register protocol now so it's ready by the time the window loads
@@ -15,6 +16,7 @@ export async function initApp() {
   app.on("ready", () => {
     mainWindow = createMainWindow(mainWindow);
     guardSingleInstance(mainWindow);
+    initAutoUpdater(mainWindow);
   });
   // Wait for IPC Messages
   registerIPCHandlers();

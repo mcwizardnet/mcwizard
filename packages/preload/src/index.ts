@@ -35,6 +35,33 @@ const api = {
       return { status: "error" } as const;
     }
   },
+  downloadUpdate: async () => {
+    try {
+      const res = await ipcRenderer.invoke("download-update");
+      return res;
+    } catch (err) {
+      console.error("downloadUpdate failed", err);
+      return { status: "error" } as const;
+    }
+  },
+  quitAndInstall: async () => {
+    try {
+      return await ipcRenderer.invoke("quit-and-install");
+    } catch (err) {
+      console.error("quitAndInstall failed", err);
+      return { status: "error" } as const;
+    }
+  },
+  onUpdateStatus: (cb: (data: any) => void) => {
+    const handler = (_e: any, data: any) => cb(data);
+    ipcRenderer.on("updates:status", handler);
+    return () => ipcRenderer.removeListener("updates:status", handler);
+  },
+  onUpdateProgress: (cb: (data: any) => void) => {
+    const handler = (_e: any, data: any) => cb(data);
+    ipcRenderer.on("updates:progress", handler);
+    return () => ipcRenderer.removeListener("updates:progress", handler);
+  },
   getFeaturedMods: async (params?: {
     gameId?: number;
     excludedModIds?: number[];
