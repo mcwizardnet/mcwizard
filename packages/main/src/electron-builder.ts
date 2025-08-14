@@ -60,9 +60,7 @@ export const config: Configuration = {
         arch: ["arm64", "x64"],
       },
     ],
-    notarize: {
-      teamId: process.env.APPLE_TEAM_ID,
-    } as any,
+    notarize: false,
   },
 };
 
