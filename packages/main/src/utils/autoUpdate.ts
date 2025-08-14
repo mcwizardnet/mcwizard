@@ -1,5 +1,8 @@
 import { app, BrowserWindow } from "electron";
-import { autoUpdater } from "electron-updater";
+import updaterPkg from "electron-updater";
+
+// electron-updater is CommonJS; access autoUpdater via default export namespace
+const { autoUpdater } = updaterPkg as unknown as { autoUpdater: any };
 
 /**
  * Initialize auto-updater: configure logging, wire events to renderer,
