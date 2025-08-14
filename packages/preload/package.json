@@ -1,0 +1,14 @@
+{
+  "name": "@app/preload",
+  "type": "module",
+  "scripts": {
+    "build": "vite build"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/exposed.d.ts",
+      "default": "./dist/exposed.mjs"
+    }
+  },
+  "version": "0.0.35"
+}

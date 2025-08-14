@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "target": "ES2022",
+    "moduleResolution": "Bundler",
+    "verbatimModuleSyntax": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "strict": true,
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "paths": {
+      "@app/main": ["packages/main"],
+      "@app/renderer": ["packages/renderer"],
+      "@app/preload": ["packages/preload"]
+    }
+  },
+  "include": ["scripts/**/*.ts"]
+}

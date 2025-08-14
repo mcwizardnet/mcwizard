@@ -1,0 +1,30 @@
+{
+  "name": "@app/renderer",
+  "type": "module",
+  "scripts": {
+    "dev": "react-router dev",
+    "build": "react-router build"
+  },
+  "main": "./dist/server/index.js",
+  "exports": {
+    ".": {
+      "default": "./dist/server/index.js"
+    },
+    "./client": {
+      "default": "./dist/client/index.html"
+    }
+  },
+  "dependencies": {
+    "react": "*",
+    "react-dom": "*",
+    "react-router": "*",
+    "@react-router/node": "*",
+    "@mui/material": "*",
+    "@emotion/react": "*",
+    "@emotion/styled": "*",
+    "@emotion/cache": "*",
+    "@emotion/server": "*",
+    "fuse.js": "^7.0.0"
+  },
+  "version": "0.0.35"
+}
