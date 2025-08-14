@@ -32,20 +32,19 @@ export default async function notarizeHook(context: any) {
   const appPath = path.join(appOutDir, `${appName}.app`);
   console.log("Preparing ZIP for notarization...", appPath);
   const zipPath = path.join(appOutDir, `${appName}.zip`);
-  const zip = spawnSync("ditto", [
-    "-c",
-    "-k",
-    "--sequesterRsrc",
-    "--keepParent",
-    appPath,
-    zipPath,
-  ], { stdio: "inherit" });
+  const zip = spawnSync(
+    "ditto",
+    ["-c", "-k", "--sequesterRsrc", "--keepParent", appPath, zipPath],
+    { stdio: "inherit" },
+  );
   if (zip.status !== 0) {
     throw new Error("Failed to create ZIP for notarization");
   }
 
   console.log("Submitting ZIP to Apple notary service...", zipPath);
-  const minutes = Number(process.env.NOTARIZE_WAIT_MINUTES || (process.env.CI ? 20 : 8));
+  const minutes = Number(
+    process.env.NOTARIZE_WAIT_MINUTES || (process.env.CI ? 20 : 8),
+  );
   const submitArgs = [
     "notarytool",
     "submit",
