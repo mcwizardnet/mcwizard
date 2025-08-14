@@ -1,5 +1,4 @@
 import path from "node:path";
-import { stapleApp } from "@electron/notarize";
 import { spawnSync } from "node:child_process";
 
 // Electron Builder afterSign hook (must be default export)
@@ -71,8 +70,13 @@ export default async function notarizeHook(context: any) {
 
   // Staple on success
   try {
-    console.log("Stapling notarization ticket...");
-    await stapleApp(appPath);
+    console.log("Stapling notarization ticket with xcrun stapler...");
+    const staple = spawnSync("xcrun", ["stapler", "staple", "-v", appPath], {
+      stdio: "inherit",
+    });
+    if (staple.status !== 0) {
+      console.warn("Stapler returned non-zero exit code, continuing");
+    }
   } catch (e) {
     console.warn("Stapling failed (continuing):", e);
   }

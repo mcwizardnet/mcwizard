@@ -64,6 +64,13 @@ export default defineConfig({
     sourcemap: "inline",
     outDir: "dist",
     target: "node22",
+    rollupOptions: {
+      external: [
+        // leave electron-updater external for node resolution at runtime
+        // so builder copies it from node_modules
+        "electron-updater",
+      ],
+    },
     lib: {
       entry: {
         index: "src/index.ts",

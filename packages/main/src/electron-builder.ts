@@ -17,6 +17,9 @@ export const getAllFilePatterns = (): string[] => {
     "node_modules/@app/preload/package.json",
     "node_modules/@app/renderer/dist/**",
     "node_modules/@app/renderer/package.json",
+
+    // Ensure runtime dependency electron-updater is packaged (Windows error fix)
+    "node_modules/electron-updater/**",
   ];
 };
 
