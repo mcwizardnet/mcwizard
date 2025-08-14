@@ -1,7 +1,7 @@
 {
   "name": "mcwizard",
   "type": "module",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A desktop app for managing Minecraft mods",
   "author": {
     "name": "mcwizard",
