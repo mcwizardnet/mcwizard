@@ -4,7 +4,10 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // Decode and prepare Apple credentials if provided in base64 secrets
-function decodeToFileIfBase64(envVar: string, outPath: string): string | undefined {
+function decodeToFileIfBase64(
+  envVar: string,
+  outPath: string,
+): string | undefined {
   const val = process.env[envVar];
   if (!val) return undefined;
   try {
