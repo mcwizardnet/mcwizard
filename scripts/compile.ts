@@ -54,7 +54,8 @@ if (!apiKeyPath && process.env.APPLE_API_KEY) {
   const keyVal = process.env.APPLE_API_KEY;
   try {
     const looksLikePem = /BEGIN [A-Z\s]*PRIVATE KEY/.test(keyVal);
-    const looksLikeB64 = /^[A-Za-z0-9+/=\r\n]+$/.test(keyVal) && keyVal.length > 200;
+    const looksLikeB64 =
+      /^[A-Za-z0-9+/=\r\n]+$/.test(keyVal) && keyVal.length > 200;
     if (looksLikePem) {
       fs.mkdirSync(path.dirname(p8Path), { recursive: true });
       fs.writeFileSync(p8Path, keyVal);

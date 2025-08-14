@@ -1,5 +1,6 @@
 import path from "node:path";
-import { notarize } from "@electron/notarize";
+import { stapleApp } from "@electron/notarize";
+import { spawnSync } from "node:child_process";
 
 // Electron Builder afterSign hook (must be default export)
 export default async function notarizeHook(context: any) {
@@ -21,14 +22,39 @@ export default async function notarizeHook(context: any) {
 
   const appPath = path.join(appOutDir, `${appName}.app`);
   console.log("Notarizing mac app with Apple API key...", appPath);
-  await notarize({
-    appBundleId: "net.mcwizard.app",
+
+  // Prefer calling xcrun notarytool directly so we can control timeout and logs
+  const minutes = Number(process.env.NOTARIZE_WAIT_MINUTES || (process.env.CI ? 20 : 8));
+  const args = [
+    "notarytool",
+    "submit",
     appPath,
-    tool: "notarytool",
+    "--key",
     appleApiKey,
-    appleApiIssuer,
+    "--key-id",
     appleApiKeyId,
-  });
+    "--issuer",
+    appleApiIssuer,
+    "--wait",
+    "--timeout",
+    `${minutes}m`,
+  ];
+  if (process.env.APPLE_TEAM_ID) {
+    args.push("--team-id", process.env.APPLE_TEAM_ID);
+  }
+
+  const submit = spawnSync("xcrun", args, { stdio: "inherit" });
+  if (submit.status !== 0) {
+    throw new Error("notarytool submit failed");
+  }
+
+  // Staple on success
+  try {
+    console.log("Stapling notarization ticket...");
+    await stapleApp(appPath);
+  } catch (e) {
+    console.warn("Stapling failed (continuing):", e);
+  }
   console.log("Notarization complete.");
 }
 
