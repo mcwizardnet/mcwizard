@@ -6,16 +6,7 @@ import { autoUpdater } from "electron-updater";
  * and optionally kick off a background update check.
  */
 export function initAutoUpdater(mainWindow: BrowserWindow | null): void {
-  // Use default electron-log via electron-updater if available
-  try {
-    // Lazy import to avoid hard dependency if not present at runtime
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const log = require("electron-log");
-    if (log && log.default) {
-      autoUpdater.logger = log.default;
-      (autoUpdater.logger as any).transports.file.level = "info";
-    }
-  } catch {}
+  // Default logging (console). Avoid hard deps to reduce packaging complexity.
 
   const send = (channel: string, payload?: any) => {
     try {
