@@ -79,8 +79,10 @@ if (apiKeyPath) {
   process.env.APPLE_API_KEY = apiKeyPath;
 }
 // If signing inputs are missing locally, allow unsigned builds
-if (!process.env.CSC_LINK && !process.env.CSC_IDENTITY_AUTO_DISCOVERY) {
-  process.env.CSC_IDENTITY_AUTO_DISCOVERY = "true";
+if (process.platform === "darwin") {
+  if (!process.env.CSC_LINK && !process.env.CSC_IDENTITY_AUTO_DISCOVERY) {
+    process.env.CSC_IDENTITY_AUTO_DISCOVERY = "true";
+  }
 }
 
 // 1) Build all workspaces

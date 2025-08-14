@@ -27,6 +27,7 @@ jobs:
       APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       CSC_IDENTITY_AUTO_DISCOVERY: false
       VITE_DISTRIBUTION_CHANNEL: latest
+      NOTARIZE_WAIT_MINUTES: 60
     steps:
       - name: Checkout
         uses: actions/checkout@v4
