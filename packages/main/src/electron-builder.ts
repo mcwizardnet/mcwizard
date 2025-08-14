@@ -27,7 +27,10 @@ export const config: Configuration = {
     output: "dist",
     buildResources: "resources",
   },
-  afterSign: process.platform === "darwin" ? "scripts/notarize.cjs" : undefined,
+  afterSign:
+    process.platform === "darwin"
+      ? "packages/main/dist/build/notarize.mjs"
+      : undefined,
   publish: [
     {
       provider: "github",

@@ -1,4 +1,4 @@
-import { BrowserWindow } from "electron";
+import { app, BrowserWindow } from "electron";
 import { autoUpdater } from "electron-updater";
 
 /**
@@ -44,10 +44,13 @@ export function initAutoUpdater(mainWindow: BrowserWindow | null): void {
     send("updates:status", { status: "downloaded", info }),
   );
 
-  // Background check and notify on first run
+  // Background check and notify on first run in production
   try {
     autoUpdater.autoDownload = true;
-    void autoUpdater.checkForUpdatesAndNotify();
+    autoUpdater.autoInstallOnAppQuit = true;
+    if (app.isPackaged) {
+      void autoUpdater.checkForUpdatesAndNotify();
+    }
   } catch {}
 }
 
@@ -64,5 +67,3 @@ export async function downloadUpdate() {
 export function quitAndInstall() {
   autoUpdater.quitAndInstall();
 }
-
-
