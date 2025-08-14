@@ -31,16 +31,26 @@ export default async function notarizeHook(context: any) {
   const appName: string = context.packager.appInfo.productFilename;
 
   const appPath = path.join(appOutDir, `${appName}.app`);
-  console.log("Notarizing mac app with Apple API key...", appPath);
+  console.log("Preparing ZIP for notarization...", appPath);
+  const zipPath = path.join(appOutDir, `${appName}.zip`);
+  const zip = spawnSync("ditto", [
+    "-c",
+    "-k",
+    "--sequesterRsrc",
+    "--keepParent",
+    appPath,
+    zipPath,
+  ], { stdio: "inherit" });
+  if (zip.status !== 0) {
+    throw new Error("Failed to create ZIP for notarization");
+  }
 
-  // Prefer calling xcrun notarytool directly so we can control timeout and logs
-  const minutes = Number(
-    process.env.NOTARIZE_WAIT_MINUTES || (process.env.CI ? 20 : 8),
-  );
-  const args = [
+  console.log("Submitting ZIP to Apple notary service...", zipPath);
+  const minutes = Number(process.env.NOTARIZE_WAIT_MINUTES || (process.env.CI ? 20 : 8));
+  const submitArgs = [
     "notarytool",
     "submit",
-    appPath,
+    zipPath,
     "--key",
     appleApiKey,
     "--key-id",
@@ -52,10 +62,9 @@ export default async function notarizeHook(context: any) {
     `${minutes}m`,
   ];
   if (process.env.APPLE_TEAM_ID) {
-    args.push("--team-id", process.env.APPLE_TEAM_ID);
+    submitArgs.push("--team-id", process.env.APPLE_TEAM_ID);
   }
-
-  const submit = spawnSync("xcrun", args, { stdio: "inherit" });
+  const submit = spawnSync("xcrun", submitArgs, { stdio: "inherit" });
   if (submit.status !== 0) {
     throw new Error("notarytool submit failed");
   }
