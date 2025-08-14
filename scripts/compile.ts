@@ -4,19 +4,22 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // Decode and prepare Apple credentials if provided in base64 secrets
-function decodeToFileIfBase64(envVar: string, outPath: string) {
+function decodeToFileIfBase64(envVar: string, outPath: string): string | undefined {
   const val = process.env[envVar];
-  if (!val) return;
+  if (!val) return undefined;
   try {
-    // Treat as raw base64 and write to file
+    const fs = require("node:fs");
     const buf = Buffer.from(val, "base64");
-    if (buf.length > 0) {
-      const fs = require("node:fs");
-      fs.mkdirSync(path.dirname(outPath), { recursive: true });
-      fs.writeFileSync(outPath, buf);
+    if (!buf || buf.length === 0) return undefined;
+    fs.mkdirSync(path.dirname(outPath), { recursive: true });
+    fs.writeFileSync(outPath, buf);
+    const stat = fs.statSync(outPath);
+    if (stat.size > 0) {
       process.env[envVar + "_FILE"] = outPath;
+      return outPath;
     }
   } catch {}
+  return undefined;
 }
 
 // electron-builder env expectations
@@ -24,29 +27,24 @@ function decodeToFileIfBase64(envVar: string, outPath: string) {
 // - For notarization with API key: set APPLE_API_KEY (path to .p8) and APPLE_API_ISSUER, APPLE_API_KEY_ID
 
 // Map provided secrets into expected vars
-if (process.env.APPLE_CSC_LINK_BASE64) {
-  // Write p12 to disk and point CSC_LINK to it
-  const p12Path = path.resolve(process.cwd(), "tmp", "cert.p12");
-  decodeToFileIfBase64("APPLE_CSC_LINK_BASE64", p12Path);
-  process.env.CSC_LINK = p12Path;
+// Write p12 to disk and point CSC_LINK to it
+const p12Path = path.resolve(process.cwd(), "tmp", "cert.p12");
+const wroteP12 = decodeToFileIfBase64("APPLE_CSC_LINK_BASE64", p12Path);
+if (wroteP12) {
+  process.env.CSC_LINK = wroteP12;
 }
 if (process.env.APPLE_CSC_KEY_PASSWORD) {
   process.env.CSC_KEY_PASSWORD = process.env.APPLE_CSC_KEY_PASSWORD;
 }
 
-if (process.env.APPLE_API_KEY_BASE64) {
-  const p8Path = path.resolve(process.cwd(), "tmp", "AuthKey.p8");
-  decodeToFileIfBase64("APPLE_API_KEY_BASE64", p8Path);
-  process.env.APPLE_API_KEY = p8Path;
+const p8Path = path.resolve(process.cwd(), "tmp", "AuthKey.p8");
+const wroteP8 = decodeToFileIfBase64("APPLE_API_KEY_BASE64", p8Path);
+if (wroteP8) {
+  process.env.APPLE_API_KEY = wroteP8;
 }
-if (process.env.APPLE_API_ISSUER) {
-  process.env.APPLE_API_ISSUER = process.env.APPLE_API_ISSUER;
-}
-if (process.env.APPLE_API_KEY_ID) {
-  process.env.APPLE_API_KEY_ID = process.env.APPLE_API_KEY_ID;
-}
-if (process.env.APPLE_TEAM_ID) {
-  process.env.APPLE_TEAM_ID = process.env.APPLE_TEAM_ID;
+// If signing inputs are missing locally, allow unsigned builds
+if (!process.env.CSC_LINK && !process.env.CSC_IDENTITY_AUTO_DISCOVERY) {
+  process.env.CSC_IDENTITY_AUTO_DISCOVERY = "true";
 }
 
 // 1) Build all workspaces
